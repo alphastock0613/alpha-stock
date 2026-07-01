@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>ALPHA STOCK - Controle Inteligente de Estoque</title>
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:'Inter',sans-serif;
+    background:#050816;
+    color:white;
+    overflow-x:hidden;
+}
+
+body::-webkit-scrollbar{
+    width:10px;
+}
+
+body::-webkit-scrollbar-thumb{
+    background:#00ff88;
+    border-radius:20px;
+}
+
+.tech-bg{
+    position:fixed;
+    inset:0;
+    background:
+    radial-gradient(circle at 20% 20%, rgba(0,255,136,0.15), transparent 25%),
+    radial-gradient(circle at 80% 30%, rgba(0,140,255,0.12), transparent 25%),
+    radial-gradient(circle at 50% 80%, rgba(0,255,136,0.08), transparent 25%),
+    #050816;
+    z-index:-1;
+}
+
+.tech-lines{
+    position:absolute;
+    width:100%;
+    height:100%;
+    background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size:40px 40px;
+    animation:moveGrid 20s linear infinite;
+}
+
+@keyframes moveGrid{
+    from{
+        transform:translateY(0px);
+    }
+    to{
+        transform:translateY(40px);
+    }
+}
+
+.loading{
+    position:fixed;
+    inset:0;
+    background:#050816;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    z-index:9999;
+    flex-direction:column;
+}
+
+.loader{
+    width:120px;
+    height:120px;
+    border-radius:50%;
+    border:6px solid rgba(255,255,255,0.1);
+    border-top:6px solid #00ff88;
+    animation:spin 1s linear infinite;
+}
+
+@keyframes spin{
+    to{
+        transform:rotate(360deg);
+    }
+}
+
+.loading h1{
+    margin-top:30px;
+    font-family:'Orbitron',sans-serif;
+    color:#00ff88;
+    letter-spacing:4px;
+}
+
+.app{
+    display:none;
+}
+
+.sidebar{
+    position:fixed;
+    width:280px;
+    height:100vh;
+    background:rgba(8,17,32,0.95);
+    backdrop-filter:blur(15px);
+    border-right:1px solid rgba(255,255,255,0.06);
+    padding:30px 20px;
+    overflow:auto;
+}
+
+.logo{
+    font-family:'Orbitron',sans-serif;
+    font-size:30px;
+    color:#00ff88;
+    font-weight:700;
+    text-align:center;
+}
+
+.slogan{
+    text-align:center;
+    margin-top:10px;
+    color:#9ca3af;
+    font-size:14px;
+}
+
+.menu{
+    margin-top:40px;
+}
+
+.menu button{
+    width:100%;
+    padding:18px;
+    margin-bottom:15px;
+    border:none;
+    border-radius:18px;
+    background:#111827;
+    color:white;
+    cursor:pointer;
+    font-size:15px;
+    font-weight:600;
+    transition:0.3s;
+}
+
+.menu button:hover{
+    background:#00ff88;
+    color:black;
+    transform:translateX(5px);
+}
+
+.main{
+    margin-left:280px;
+    padding:30px;
+}
+
+.hero{
+    height:280px;
+    border-radius:30px;
+    background:
+    linear-gradient(135deg,#0f172a,#081120);
+    border:1px solid rgba(255,255,255,0.05);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    position:relative;
+    overflow:hidden;
+}
+
+.hero::before{
+    content:"";
+    position:absolute;
+    width:400px;
+    height:400px;
+    background:rgba(0,255,136,0.08);
+    border-radius:50%;
+    filter:blur(100px);
+}
+
+.hero h1{
+    font-size:52px;
+    font-family:'Orbitron',sans-serif;
+    z-index:2;
+}
+
+.hero p{
+    color:#9ca3af;
+    margin-top:10px;
+    z-index:2;
+}
+
+.grid{
+    margin-top:30px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:25px;
+}
+
+.card{
+    background:#0f172a;
+    border-radius:25px;
+    padding:25px;
+    border:1px solid rgba(255,255,255,0.05);
+    transition:0.3s;
+}
+
+.card:hover{
+    transform:translateY(-5px);
+    border:1px solid rgba(0,255,136,0.2);
+}
+
+.card h2{
+    color:#9ca3af;
+    font-size:15px;
+}
+
+.card h1{
+    margin-top:15px;
+    font-size:40px;
+}
+
+.green{
+    color:#00ff88;
+}
+
+.red{
+    color:#ff4d4d;
+}
+
+.form{
+    margin-top:30px;
+}
+
+.form input,
+.form select,
+.form textarea{
+    width:100%;
+    padding:16px;
+    margin-top:15px;
+    background:#111827;
+    border:none;
+    border-radius:15px;
+    color:white;
+    font-size:15px;
+}
+
+.form textarea{
+    resize:none;
+    height:120px;
+}
+
+.btn{
+    margin-top:20px;
+    width:100%;
+    padding:18px;
+    border:none;
+    border-radius:15px;
+    background:#00ff88;
+    color:black;
+    font-weight:700;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.btn:hover{
+    transform:scale(1.02);
+}
+
+.products{
+    margin-top:40px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+    gap:25px;
+}
+
+.product{
+    background:#0f172a;
+    border-radius:25px;
+    padding:25px;
+    border:1px solid rgba(255,255,255,0.05);
+}
+
+.product.low{
+    border:2px solid red;
+}
+
+.product img{
+    margin-top:20px;
+    background:white;
+    padding:10px;
+    border-radius:15px;
+}
+
+.product h2{
+    font-size:24px;
+}
+
+.product p{
+    margin-top:8px;
+    color:#9ca3af;
+}
+
+.badge{
+    margin-top:15px;
+    display:inline-block;
+    padding:8px 15px;
+    border-radius:30px;
+    background:#00ff88;
+    color:black;
+    font-weight:700;
+}
+
+.search{
+    margin-top:30px;
+}
+
+.search input{
+    width:100%;
+    padding:18px;
+    background:#111827;
+    border:none;
+    border-radius:18px;
+    color:white;
+    font-size:16px;
+}
+
+.table{
+    margin-top:30px;
+    width:100%;
+    border-collapse:collapse;
+}
+
+.table th{
+    background:#111827;
+    padding:18px;
+    text-align:left;
+}
+
+.table td{
+    padding:18px;
+    border-bottom:1px solid rgba(255,255,255,0.05);
+}
+
+.login{
+    position:fixed;
+    inset:0;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.login-box{
+    width:450px;
+    background:#081120;
+    border-radius:30px;
+    padding:40px;
+    border:1px solid rgba(255,255,255,0.05);
+}
+
+.login-box h1{
+    text-align:center;
+    font-family:'Orbitron',sans-serif;
+    color:#00ff88;
+    font-size:38px;
+}
+
+.login-box p{
+    text-align:center;
+    color:#9ca3af;
+    margin-top:10px;
+}
+
+.qr-section{
+    margin-top:40px;
+}
+
+#reader{
+    margin-top:20px;
+    border-radius:20px;
+    overflow:hidden;
+}
+
+.toast{
+    position:fixed;
+    right:30px;
+    bottom:30px;
+    background:#00ff88;
+    color:black;
+    padding:20px;
+    border-radius:15px;
+    font-weight:700;
+    display:none;
+    z-index:999;
+}
+
+.big-btn{
+    width:100%;
+    padding:20px;
+    border:none;
+    border-radius:20px;
+    margin-top:20px;
+    font-size:18px;
+    font-weight:700;
+    cursor:pointer;
+}
+
+.remove{
+    background:#ff4d4d;
+    color:white;
+}
+
+.add{
+    background:#00ff88;
+    color:black;
+}
+
+.accessibility{
+    position:fixed;
+    bottom:20px;
+    left:20px;
+    background:#00ff88;
+    color:black;
+    padding:15px;
+    border-radius:50%;
+    font-size:22px;
+    cursor:pointer;
+    z-index:999;
+}
+
+@media(max-width:900px){
+
+    .sidebar{
+        position:relative;
+        width:100%;
+        height:auto;
+    }
+
+    .main{
+        margin-left:0;
+    }
+
+    .app{
+        flex-direction:column;
+    }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="tech-bg">
+    <div class="tech-lines"></div>
+</div>
+
+<div class="loading" id="loading">
+    <div class="loader"></div>
+    <h1>ALPHA STOCK</h1>
+</div>
+
+<div class="login" id="loginScreen">
+
+    <div class="login-box">
+
+        <h1>ALPHA STOCK</h1>
+
+        <p>Controle Inteligente de Estoque</p>
+
+        <div class="form">
+
+            <input type="text" id="user" placeholder="Nome">
+
+            <input type="email" id="email" placeholder="E-mail">
+
+            <input type="password" id="password" placeholder="Senha">
+
+            <input type="password" id="pin" placeholder="PIN Rápido">
+
+            <select id="type">
+                <option>Administrador</option>
+                <option>Funcionário</option>
+            </select>
+
+            <button class="btn" onclick="login()">
+                ENTRAR
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="app" id="app">
+
+    <div class="sidebar">
+
+        <div class="logo">
+            ALPHA STOCK
+        </div>
+
+        <div class="slogan">
+            Controle Inteligente de Estoque
+        </div>
+
+        <div class="menu">
+
+            <button onclick="showSection('dashboard')">
+                Dashboard
+            </button>
+
+            <button onclick="showSection('products')">
+                Produtos
+            </button>
+
+            <button onclick="showSection('entry')">
+                Entrada
+            </button>
+
+            <button onclick="showSection('exit')">
+                Saída
+            </button>
+
+            <button onclick="showSection('qr')">
+                QR Code
+            </button>
+
+            <button onclick="showSection('history')">
+                Histórico
+            </button>
+
+            <button onclick="showSection('reports')">
+                Relatórios
+            </button>
+
+            <button onclick="toggleContrast()">
+                Alto Contraste
+            </button>
+
+        </div>
+
+    </div>
+
+    <div class="main">
+
+        <section id="dashboardSection">
+
+            <div class="hero">
+
+                <h1>ALPHA STOCK</h1>
+
+                <p>
+                    Plataforma Premium de Gestão Inteligente de Estoque
+                </p>
+
+            </div>
+
+            <div class="grid">
+
+                <div class="card">
+                    <h2>Total Produtos</h2>
+                    <h1 class="green" id="totalProducts">0</h1>
+                </div>
+
+                <div class="card">
+                    <h2>Produtos Acabando</h2>
+                    <h1 class="red" id="lowProducts">0</h1>
+                </div>
+
+                <div class="card">
+                    <h2>Entradas Hoje</h2>
+                    <h1 class="green" id="entriesToday">0</h1>
+                </div>
+
+                <div class="card">
+                    <h2>Saídas Hoje</h2>
+                    <h1 class="red" id="exitsToday">0</h1>
+                </div>
+
+            </div>
+
+        </section>
+
+        <section id="productsSection" style="display:none;">
+
+            <div class="card">
+
+                <h1>Cadastro de Produtos</h1>
+
+                <div class="form">
+
+                    <input type="text" id="name" placeholder="Nome do Produto">
+
+                    <input type="text" id="category" placeholder="Categoria">
+
+                    <input type="number" id="quantity" placeholder="Quantidade">
+
+                    <input type="number" id="minimum" placeholder="Quantidade Mínima">
+
+                    <input type="text" id="location" placeholder="Localização Ex: A1">
+
+                    <input type="text" id="supplier" placeholder="Fornecedor">
+
+                    <textarea id="notes" placeholder="Observações"></textarea>
+
+                    <button class="btn" onclick="addProduct()">
+                        SALVAR PRODUTO
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div class="search">
+
+                <input
+                type="text"
+                id="search"
+                placeholder="Pesquisar produto..."
+                onkeyup="searchProduct()">
+
+            </div>
+
+            <div class="products" id="productsList"></div>
+
+        </section>
+
+        <section id="entrySection" style="display:none;">
+
+            <div class="card">
+
+                <h1>Entrada de Produtos</h1>
+
+                <div class="form">
+
+                    <input type="text" id="entryName" placeholder="Nome Produto">
+
+                    <input type="number" id="entryQuantity" placeholder="Quantidade">
+
+                    <button class="btn" onclick="addStock()">
+                        ADICIONAR ESTOQUE
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <section id="exitSection" style="display:none;">
+
+            <div class="card">
+
+                <h1>Baixa de Produtos</h1>
+
+                <div class="form">
+
+                    <input type="text" id="exitName" placeholder="Nome Produto">
+
+                    <input type="number" id="exitQuantity" placeholder="Quantidade">
+
+                    <button class="btn" onclick="removeStock()">
+                        DAR BAIXA
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <section id="qrSection" style="display:none;">
+
+            <div class="card">
+
+                <h1>Scanner QR Code</h1>
+
+                <div id="reader"></div>
+
+            </div>
+
+        </section>
+
+        <section id="historySection" style="display:none;">
+
+            <div class="card">
+
+                <h1>Histórico</h1>
+
+                <table class="table">
+
+                    <thead>
+
+                        <tr>
+                            <th>Produto</th>
+                            <th>Tipo</th>
+                            <th>Quantidade</th>
+                            <th>Usuário</th>
+                            <th>Data</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="historyTable"></tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+        <section id="reportsSection" style="display:none;">
+
+            <div class="card">
+
+                <h1>Relatórios</h1>
+
+                <button class="big-btn add" onclick="exportData()">
+                    EXPORTAR RELATÓRIO
+                </button>
+
+            </div>
+
+        </section>
+
+    </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="accessibility" onclick="increaseFont()">
+♿
+</div>
+
+<script>
+
+let products = [];
+let history = [];
+let currentUser = "";
+
+setTimeout(()=>{
+
+    document.getElementById("loading").style.display="none";
+
+},2000);
+
+function login(){
+
+    const user = document.getElementById("user").value;
+
+    if(user===""){
+        showToast("Digite o usuário");
+        return;
+    }
+
+    currentUser = user;
+
+    document.getElementById("loginScreen").style.display="none";
+
+    document.getElementById("app").style.display="flex";
+
+    startScanner();
+
+    showToast("Bem-vindo " + user);
+
+}
+
+function showSection(section){
+
+    const sections = [
+        "dashboard",
+        "products",
+        "entry",
+        "exit",
+        "qr",
+        "history",
+        "reports"
+    ];
+
+    sections.forEach(sec=>{
+
+        document.getElementById(sec+"Section").style.display="none";
+
+    });
+
+    document.getElementById(section+"Section").style.display="block";
+
+}
+
+function addProduct(){
+
+    const name = document.getElementById("name").value;
+    const category = document.getElementById("category").value;
+    const quantity = parseInt(document.getElementById("quantity").value);
+    const minimum = parseInt(document.getElementById("minimum").value);
+    const location = document.getElementById("location").value;
+    const supplier = document.getElementById("supplier").value;
+    const notes = document.getElementById("notes").value;
+
+    if(name===""){
+        showToast("Digite o nome");
+        return;
+    }
+
+    const id = Date.now();
+
+    const product = {
+        id,
+        name,
+        category,
+        quantity,
+        minimum,
+        location,
+        supplier,
+        notes
+    };
+
+    products.push(product);
+
+    generateProductCard(product);
+
+    updateDashboard();
+
+    showToast("Produto cadastrado");
+
+}
+
+function generateProductCard(product){
+
+    QRCode.toDataURL(product.id.toString(),function(err,url){
+
+        const div = document.createElement("div");
+
+        div.className = "product";
+
+        if(product.quantity <= product.minimum){
+            div.classList.add("low");
+        }
+
+        div.innerHTML = `
+
+            <h2>${product.name}</h2>
+
+            <p>Categoria: ${product.category}</p>
+
+            <p>Quantidade: <span id="qtd-${product.id}">${product.quantity}</span></p>
+
+            <p>Mínimo: ${product.minimum}</p>
+
+            <p>Localização: ${product.location}</p>
+
+            <p>Fornecedor: ${product.supplier}</p>
+
+            <p>${product.notes}</p>
+
+            <div class="badge">
+                ${product.quantity <= product.minimum ? 'REPOSIÇÃO' : 'ESTÁVEL'}
+            </div>
+
+            <br>
+
+            <img src="${url}" width="180">
+
+            <button class="big-btn remove" onclick="quickRemove(${product.id})">
+                DAR BAIXA
+            </button>
+
+            <button class="big-btn add" onclick="quickAdd(${product.id})">
+                ADICIONAR ESTOQUE
+            </button>
+
+        `;
+
+        document.getElementById("productsList").appendChild(div);
+
+    });
+
+}
+
+function quickRemove(id){
+
+    const qty = prompt("Quantidade retirada:");
+
+    if(!qty) return;
+
+    const product = products.find(p=>p.id===id);
+
+    if(product.quantity - qty < 0){
+
+        showToast("Estoque insuficiente");
+
+        return;
+
+    }
+
+    product.quantity -= parseInt(qty);
+
+    document.getElementById("qtd-"+id).innerText = product.quantity;
+
+    addHistory(product.name,"Saída",qty);
+
+    updateDashboard();
+
+    showToast("Baixa realizada");
+
+}
+
+function quickAdd(id){
+
+    const qty = prompt("Quantidade adicionada:");
+
+    if(!qty) return;
+
+    const product = products.find(p=>p.id===id);
+
+    product.quantity += parseInt(qty);
+
+    document.getElementById("qtd-"+id).innerText = product.quantity;
+
+    addHistory(product.name,"Entrada",qty);
+
+    updateDashboard();
+
+    showToast("Estoque atualizado");
+
+}
+
+function addStock(){
+
+    const name = document.getElementById("entryName").value;
+
+    const qty = parseInt(document.getElementById("entryQuantity").value);
+
+    const product = products.find(p=>p.name===name);
+
+    if(!product){
+
+        showToast("Produto não encontrado");
+
+        return;
+
+    }
+
+    product.quantity += qty;
+
+    document.getElementById("qtd-"+product.id).innerText = product.quantity;
+
+    addHistory(product.name,"Entrada",qty);
+
+    updateDashboard();
+
+    showToast("Entrada registrada");
+
+}
+
+function removeStock(){
+
+    const name = document.getElementById("exitName").value;
+
+    const qty = parseInt(document.getElementById("exitQuantity").value);
+
+    const product = products.find(p=>p.name===name);
+
+    if(!product){
+
+        showToast("Produto não encontrado");
+
+        return;
+
+    }
+
+    if(product.quantity - qty < 0){
+
+        showToast("Estoque insuficiente");
+
+        return;
+
+    }
+
+    product.quantity -= qty;
+
+    document.getElementById("qtd-"+product.id).innerText = product.quantity;
+
+    addHistory(product.name,"Saída",qty);
+
+    updateDashboard();
+
+    showToast("Baixa realizada");
+
+}
+
+function addHistory(product,type,qty){
+
+    const now = new Date();
+
+    const item = {
+        product,
+        type,
+        qty,
+        user:currentUser,
+        date:now.toLocaleString()
+    };
+
+    history.push(item);
+
+    renderHistory();
+
+}
+
+function renderHistory(){
+
+    const table = document.getElementById("historyTable");
+
+    table.innerHTML = "";
+
+    history.forEach(h=>{
+
+        table.innerHTML += `
+
+            <tr>
+
+                <td>${h.product}</td>
+
+                <td>${h.type}</td>
+
+                <td>${h.qty}</td>
+
+                <td>${h.user}</td>
+
+                <td>${h.date}</td>
+
+            </tr>
+
+        `;
+
+    });
+
+}
+
+function updateDashboard(){
+
+    document.getElementById("totalProducts").innerText = products.length;
+
+    const low = products.filter(
+        p=>p.quantity <= p.minimum
+    ).length;
+
+    document.getElementById("lowProducts").innerText = low;
+
+    const entries = history.filter(
+        h=>h.type==="Entrada"
+    ).length;
+
+    const exits = history.filter(
+        h=>h.type==="Saída"
+    ).length;
+
+    document.getElementById("entriesToday").innerText = entries;
+
+    document.getElementById("exitsToday").innerText = exits;
+
+}
+
+function showToast(text){
+
+    const toast = document.getElementById("toast");
+
+    toast.innerText = text;
+
+    toast.style.display="block";
+
+    setTimeout(()=>{
+
+        toast.style.display="none";
+
+    },3000);
+
+}
+
+function searchProduct(){
+
+    const value = document.getElementById("search").value.toLowerCase();
+
+    const cards = document.querySelectorAll(".product");
+
+    cards.forEach(card=>{
+
+        if(card.innerText.toLowerCase().includes(value)){
+
+            card.style.display="block";
+
+        } else {
+
+            card.style.display="none";
+
+        }
+
+    });
+
+}
+
+function exportData(){
+
+    let content = "ALPHA STOCK\n\n";
+
+    products.forEach(p=>{
+
+        content += `
+Produto: ${p.name}
+Categoria: ${p.category}
+Quantidade: ${p.quantity}
+Localização: ${p.location}
+
+`;
+
+    });
+
+    const blob = new Blob([content],{
+        type:"text/plain"
+    });
+
+    const a = document.createElement("a");
+
+    a.href = URL.createObjectURL(blob);
+
+    a.download = "relatorio_alpha_stock.txt";
+
+    a.click();
+
+    showToast("Relatório exportado");
+
+}
+
+function startScanner(){
+
+    const scanner = new Html5QrcodeScanner(
+        "reader",
+        {
+            fps:10,
+            qrbox:250
+        },
+        false
+    );
+
+    scanner.render(success);
+
+    function success(result){
+
+        const product = products.find(
+            p=>p.id.toString()===result
+        );
+
+        if(product){
+
+            alert(
+`
+Produto: ${product.name}
+
+Quantidade: ${product.quantity}
+
+Categoria: ${product.category}
+
+Localização: ${product.location}
+
+Fornecedor: ${product.supplier}
+`
+            );
+
+        }
+
+    }
+
+}
+
+function toggleContrast(){
+
+    document.body.classList.toggle("contrast");
+
+    if(document.body.classList.contains("contrast")){
+
+        document.body.style.background="black";
+
+        document.body.style.color="yellow";
+
+    } else {
+
+        document.body.style.background="#050816";
+
+        document.body.style.color="white";
+
+    }
+
+}
+
+function increaseFont(){
+
+    document.body.style.fontSize="20px";
+
+    showToast("Fonte ampliada");
+
+}
+
+</script>
+
+</body>
+</html>
